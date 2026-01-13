@@ -10,8 +10,10 @@
 #include <sys/stat.h>
 #ifdef _WIN32
 #include <direct.h>
+#define PATH_SEPARATOR "\\"
 #else
 #include <sys/stat.h>
+#define PATH_SEPARATOR "/"
 #endif
 
 // Find the start offset of the ZIP portion in a hybrid exe+zip file
@@ -192,7 +194,19 @@ int main(int argc, char** argv, char** envp) {
     
     // Write all modified files to the game folder
     for (const auto& [filename, content] : file_contents) {
-        std::string output_path = game_dir + "\\" + filename;
+        // Skip directory entries (they end with /)
+        if (!filename.empty() && (filename.back() == '/' || filename.back() == '\\')) {
+            continue;
+        }
+        
+        std::string output_path = game_dir + PATH_SEPARATOR + filename;
+        
+        // Normalize path separators for current OS
+        #ifdef _WIN32
+            std::replace(output_path.begin(), output_path.end(), '/', '\\');
+        #else
+            std::replace(output_path.begin(), output_path.end(), '\\', '/');
+        #endif
         
         // Create subdirectories if needed
         std::string current_path = game_dir;
@@ -200,7 +214,7 @@ int main(int argc, char** argv, char** envp) {
         size_t pos = 0;
         while ((pos = remaining.find_first_of("/\\")) != std::string::npos) {
             std::string dir_part = remaining.substr(0, pos);
-            current_path += "\\" + dir_part;
+            current_path += PATH_SEPARATOR + dir_part;
             #ifdef _WIN32
                 _mkdir(current_path.c_str());
             #else
@@ -292,7 +306,7 @@ int main(int argc, char** argv, char** envp) {
     
     // Step 7: Create launch.json in .vscode folder next to the input file
     std::string vscode_dir = input_dir + ".vscode";
-    std::string launch_json_path = vscode_dir + "\\launch.json";
+    std::string launch_json_path = vscode_dir + PATH_SEPARATOR "launch.json";
     
     // Create .vscode directory if it doesn't exist
     #ifdef _WIN32
@@ -301,21 +315,23 @@ int main(int argc, char** argv, char** envp) {
         mkdir(vscode_dir.c_str(), 0755);
     #endif
     
-    // Escape backslashes in the path for JSON
+    // Escape backslashes in the path for JSON (Windows only)
     std::string escaped_output_path = output_file;
-    size_t pos = 0;
-    while ((pos = escaped_output_path.find("\\", pos)) != std::string::npos) {
-        escaped_output_path.replace(pos, 1, "\\\\");
-        pos += 2;
-    }
-    
-    // Escape backslashes for love.exe path
     std::string escaped_love_exe_path = exe_only_file;
-    pos = 0;
-    while ((pos = escaped_love_exe_path.find("\\", pos)) != std::string::npos) {
-        escaped_love_exe_path.replace(pos, 1, "\\\\");
-        pos += 2;
-    }
+    
+    #ifdef _WIN32
+        size_t pos = 0;
+        while ((pos = escaped_output_path.find("\\", pos)) != std::string::npos) {
+            escaped_output_path.replace(pos, 1, "\\\\");
+            pos += 2;
+        }
+        
+        pos = 0;
+        while ((pos = escaped_love_exe_path.find("\\", pos)) != std::string::npos) {
+            escaped_love_exe_path.replace(pos, 1, "\\\\");
+            pos += 2;
+        }
+    #endif
     
     std::ofstream launch_json(launch_json_path);
     if (launch_json.is_open()) {
