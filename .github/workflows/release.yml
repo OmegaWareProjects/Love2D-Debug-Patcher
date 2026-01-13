@@ -1,0 +1,106 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            artifact_name: Balatro-Debug-Patcher-Windows.exe
+            build_path: Build/Release/Balatro Debug Patcher.exe
+          - os: ubuntu-latest
+            artifact_name: Balatro-Debug-Patcher-Linux
+            build_path: Build/Release/Balatro Debug Patcher
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install xmake (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Invoke-WebRequest -Uri "https://xmake.io/shget.ps1" -OutFile "get-xmake.ps1"
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          .\get-xmake.ps1
+          
+      - name: Install xmake (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          curl -fsSL https://xmake.io/shget.text | bash
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure xmake
+        run: xmake f -m release
+
+      - name: Build project
+        run: xmake
+
+      - name: Rename artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Copy-Item "${{ matrix.build_path }}" "${{ matrix.artifact_name }}"
+
+      - name: Rename artifact (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cp "${{ matrix.build_path }}" "${{ matrix.artifact_name }}"
+          chmod +x "${{ matrix.artifact_name }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Balatro-Debug-Patcher-Windows.exe
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Balatro-Debug-Patcher-Linux
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            Balatro-Debug-Patcher-Windows.exe
+            Balatro-Debug-Patcher-Linux
+          body: |
+            ## Balatro Debug Patcher Release
+            
+            ### Installation
+            
+            #### Windows
+            Download `Balatro-Debug-Patcher-Windows.exe` and run it with your Balatro executable.
+            
+            #### Linux
+            Download `Balatro-Debug-Patcher-Linux`, make it executable with `chmod +x`, and run it with your Balatro executable.
+            
+            ### What's Changed
+            - TODO: Add changelog here
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
