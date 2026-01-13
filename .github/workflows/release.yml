@@ -18,11 +18,11 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         include:
           - os: windows-latest
-            artifact_name: Balatro-Debug-Patcher-Windows.exe
-            build_path: Build/Release/Balatro Debug Patcher.exe
+            artifact_name: Love2D-Debug-Patcher.exe
+            build_path: Build/Release/Love2D-Debug-Patcher.exe
           - os: ubuntu-latest
-            artifact_name: Balatro-Debug-Patcher-Linux
-            build_path: Build/Release/Balatro Debug Patcher
+            artifact_name: Love2D-Debug-Patcher
+            build_path: Build/Release/Love2D-Debug-Patcher.exe
 
     steps:
       - name: Checkout Repository with Submodules
@@ -78,12 +78,12 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: Balatro-Debug-Patcher-Windows.exe
+          name: Love2D-Debug-Patcher.exe
 
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          name: Balatro-Debug-Patcher-Linux
+          name: Love2D-Debug-Patcher
 
       - name: Create draft release
         uses: softprops/action-gh-release@v1
