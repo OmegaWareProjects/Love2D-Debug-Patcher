@@ -8,7 +8,12 @@ on:
 
 jobs:
   build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest]
         include:
@@ -19,22 +24,30 @@ jobs:
             artifact_name: Balatro-Debug-Patcher-Linux
             build_path: Build/Release/Balatro Debug Patcher
 
-    runs-on: ${{ matrix.os }}
-
     steps:
-      - name: Checkout code
+      - name: Checkout Repository with Submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
-      - name: Setup xmake
+      - name: Initialize and Update Submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Install XMake
         uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
 
-      - name: Configure xmake
-        run: xmake f -m release
+      - name: Configure XMake
+        run: |
+          xmake f -m release
 
-      - name: Build project
-        run: xmake
+      - name: Build with XMake
+        run: |
+          xmake build
 
       - name: Rename artifact (Windows)
         if: runner.os == 'Windows'
@@ -77,20 +90,7 @@ jobs:
         with:
           draft: true
           files: |
-            Balatro-Debug-Patcher-Windows.exe
-            Balatro-Debug-Patcher-Linux
-          body: |
-            ## Balatro Debug Patcher Release
-            
-            ### Installation
-            
-            #### Windows
-            Download `Balatro-Debug-Patcher-Windows.exe` and run it with your Balatro executable.
-            
-            #### Linux
-            Download `Balatro-Debug-Patcher-Linux`, make it executable with `chmod +x`, and run it with your Balatro executable.
-            
-            ### What's Changed
-            - TODO: Add changelog here
+            Balatro-Debug-Patcher.exe
+            Balatro-Debug-Patcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

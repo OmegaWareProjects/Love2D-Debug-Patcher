@@ -1,2 +1,3 @@
 .xmake
 Build
+.vscode/compile_commands.json

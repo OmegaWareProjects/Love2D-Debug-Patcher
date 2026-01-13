@@ -15,12 +15,8 @@ else
     set_runtimes(runtime)
 end
 
-target("Balatro Debug Patcher")
+target("Love2D-Debug-Patcher")
     set_languages("c++latest")
     set_kind("binary")
     add_files("Source/**.cpp")
     add_files("Source/Libs/miniz/miniz.c")
-
-    add_links(
-        "kernel32", "user32", "shell32", "ntdll"
-    )
