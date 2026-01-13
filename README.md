@@ -3,7 +3,7 @@
 This application attempts to patch Love2D/Löve game executables to inject Local Lua Debugger (lldebugger) initialization code into `main.lua`, enabling VS Code debugging of the Lua game code.
 
 ## Usage
-1. Build the project using [xmake](https://xmake.io/#/) or download a pre-built executable from the [Releases](https://github.com/Omega172/Love2D-Debug-Patcher/releases).
+1. Build the project using [xmake](https://xmake.io/#/) or download a pre-built executable from the [Releases](https://github.com/OmegaWareProjects/Love2D-Debug-Patcher/releases).
 2. Run the resulting executable, providing a Love2D game executable as an argument or by drag-and-drop.
 3. The tool will generate:
    - A patched executable with debugger initialization code injected.
