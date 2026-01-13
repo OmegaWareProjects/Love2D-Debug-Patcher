@@ -27,18 +27,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install xmake (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          Invoke-WebRequest -Uri "https://xmake.io/shget.ps1" -OutFile "get-xmake.ps1"
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-          .\get-xmake.ps1
-          
-      - name: Install xmake (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          curl -fsSL https://xmake.io/shget.text | bash
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
 
       - name: Configure xmake
         run: xmake f -m release
