@@ -22,7 +22,7 @@ jobs:
             build_path: Build/Release/Love2D-Debug-Patcher.exe
           - os: ubuntu-latest
             artifact_name: Love2D-Debug-Patcher
-            build_path: Build/Release/Love2D-Debug-Patcher.exe
+            build_path: Build/Release/Love2D-Debug-Patcher
 
     steps:
       - name: Checkout Repository with Submodules
