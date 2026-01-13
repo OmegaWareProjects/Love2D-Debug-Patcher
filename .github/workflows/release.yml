@@ -90,7 +90,7 @@ jobs:
         with:
           draft: true
           files: |
-            Balatro-Debug-Patcher.exe
-            Balatro-Debug-Patcher
+            Love2D-Debug-Patcher.exe
+            Love2D-Debug-Patcher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
